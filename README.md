@@ -18,6 +18,7 @@ This package is intentionally pragmatic. It is not an academic DDD framework, it
 - [Repositories And Eloquent](#repositories-and-eloquent)
 - [Custom Stubs](#custom-stubs)
 - [Development](#development)
+- [License](#license)
 
 ## Why This Exists
 
@@ -278,3 +279,7 @@ When PHP or Composer are not available on the host machine, the same checks can 
 docker run --rm --user 1000:1000 -v "$PWD:/app" -w /app --entrypoint /composer/vendor/bin/psalm ghcr.io/danog/psalm:latest --no-cache --show-info=false
 docker run --rm --user 1000:1000 -v "$PWD:/app" -w /app --entrypoint /composer/vendor/bin/psalm ghcr.io/danog/psalm:latest --no-cache --show-info=false --taint-analysis
 ```
+
+## License
+
+This project is open-sourced software licensed under the [MIT license](LICENSE).
