@@ -10,11 +10,11 @@ use SamuelNunes\LaravelDddToolkit\Support\ModulePaths;
 use SamuelNunes\LaravelDddToolkit\Support\ModuleStructure;
 use SamuelNunes\LaravelDddToolkit\Support\StubRenderer;
 
-class MakeDomainCommand extends Command
+class MakeModuleCommand extends Command
 {
     use WritesFiles;
 
-    protected $signature = 'make:domain {name : The module/domain name} {--force : Overwrite generated files}';
+    protected $signature = 'make:module {name : The module name} {--force : Overwrite generated files}';
 
     protected $description = 'Create a DDD module structure.';
 

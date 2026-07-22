@@ -7,11 +7,11 @@ use InvalidArgumentException;
 use SamuelNunes\LaravelDddToolkit\Support\ModulePaths;
 use SamuelNunes\LaravelDddToolkit\Tests\TestCase;
 
-class MakeDomainCommandTest extends TestCase
+class MakeModuleCommandTest extends TestCase
 {
     public function test_it_creates_the_default_module_structure(): void
     {
-        $this->artisan('make:domain', ['name' => 'Order'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
 
         $files = new Filesystem();
 
@@ -26,7 +26,7 @@ class MakeDomainCommandTest extends TestCase
     {
         config(['ddd.modules_path' => 'src/Modules']);
 
-        $this->artisan('make:domain', ['name' => 'Billing'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Billing'])->assertSuccessful();
 
         $this->assertTrue((new Filesystem())->isDirectory(base_path('src/Modules/Billing/Domain/Entities')));
     }
@@ -35,7 +35,7 @@ class MakeDomainCommandTest extends TestCase
     {
         config(['ddd.preset' => 'minimal']);
 
-        $this->artisan('make:domain', ['name' => 'User'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'User'])->assertSuccessful();
 
         $files = new Filesystem();
 
@@ -45,7 +45,7 @@ class MakeDomainCommandTest extends TestCase
 
     public function test_it_rejects_module_names_with_path_traversal_segments(): void
     {
-        $this->artisan('make:domain', ['name' => '../../etc'])->assertFailed();
+        $this->artisan('make:module', ['name' => '../../etc'])->assertFailed();
 
         $this->assertFalse((new Filesystem())->isDirectory(base_path('app/Modules/Etc')));
     }

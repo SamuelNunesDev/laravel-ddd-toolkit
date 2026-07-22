@@ -29,7 +29,7 @@ trait ResolvesModules
             return true;
         }
 
-        $this->components->error("Module [{$module}] does not exist. Run [php artisan make:domain {$module}] first.");
+        $this->components->error("Module [{$module}] does not exist. Run [php artisan make:module {$module}] first.");
 
         return false;
     }

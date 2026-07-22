@@ -12,7 +12,7 @@ class ModulesServiceProviderTest extends TestCase
     {
         $this->artisan('ddd:install')
             ->assertSuccessful();
-        $this->artisan('make:domain', ['name' => 'Order'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
 
         (new Filesystem())->put(
             base_path('app/Modules/Order/Infrastructure/Http/routes.php'),
@@ -30,7 +30,7 @@ class ModulesServiceProviderTest extends TestCase
     {
         $this->artisan('ddd:install')
             ->assertSuccessful();
-        $this->artisan('make:domain', ['name' => 'Order'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
 
         $providerPath = base_path('app/Modules/Order/Infrastructure/Providers/OrderServiceProvider.php');
 

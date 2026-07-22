@@ -9,7 +9,7 @@ class ClassGeneratorsTest extends TestCase
 {
     public function test_it_generates_mvp_classes_in_the_expected_namespaces(): void
     {
-        $this->artisan('make:domain', ['name' => 'Order'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
         $this->artisan('make:entity', ['name' => 'Order', '--module' => 'Order'])->assertSuccessful();
         $this->artisan('make:value-object', ['name' => 'Email', '--module' => 'Order'])->assertSuccessful();
         $this->artisan('make:usecase', ['name' => 'CancelOrder', '--module' => 'Order'])->assertSuccessful();
@@ -32,7 +32,7 @@ class ClassGeneratorsTest extends TestCase
 
     public function test_it_does_not_overwrite_without_force(): void
     {
-        $this->artisan('make:domain', ['name' => 'Order'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
         $this->artisan('make:entity', ['name' => 'Order', '--module' => 'Order', '--force' => true])->assertSuccessful();
 
         $path = base_path('app/Modules/Order/Domain/Entities/Order.php');
@@ -45,7 +45,7 @@ class ClassGeneratorsTest extends TestCase
 
     public function test_repository_generation_is_disabled_by_default(): void
     {
-        $this->artisan('make:domain', ['name' => 'Order'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
 
         $this->artisan('make:repository', ['name' => 'OrderRepository', '--module' => 'Order'])->assertFailed();
 
@@ -59,7 +59,7 @@ class ClassGeneratorsTest extends TestCase
             'ddd.create_policies' => true,
         ]);
 
-        $this->artisan('make:domain', ['name' => 'Payment'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Payment'])->assertSuccessful();
         $this->artisan('make:acl', ['name' => 'Stripe', '--module' => 'Payment'])->assertSuccessful();
         $this->artisan('make:event', ['name' => 'OrderCancelled', '--module' => 'Payment'])->assertSuccessful();
         $this->artisan('make:listener', ['name' => 'RefundPayment', '--module' => 'Payment'])->assertSuccessful();
@@ -82,7 +82,7 @@ class ClassGeneratorsTest extends TestCase
 
     public function test_acl_generation_completes_missing_files_without_overwriting_existing_files(): void
     {
-        $this->artisan('make:domain', ['name' => 'Payment'])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Payment'])->assertSuccessful();
         $this->artisan('make:acl', ['name' => 'Stripe', '--module' => 'Payment'])->assertSuccessful();
 
         $files = new Filesystem();

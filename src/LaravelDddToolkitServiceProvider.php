@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use SamuelNunes\LaravelDddToolkit\Commands\DddInstallCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeAclCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeAggregateCommand;
-use SamuelNunes\LaravelDddToolkit\Commands\MakeDomainCommand;
+use SamuelNunes\LaravelDddToolkit\Commands\MakeModuleCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeEntityCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeEventCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeListenerCommand;
@@ -43,7 +43,7 @@ class LaravelDddToolkitServiceProvider extends ServiceProvider
             DddInstallCommand::class,
             MakeAclCommand::class,
             MakeAggregateCommand::class,
-            MakeDomainCommand::class,
+            MakeModuleCommand::class,
             MakeEntityCommand::class,
             MakeEventCommand::class,
             MakeListenerCommand::class,

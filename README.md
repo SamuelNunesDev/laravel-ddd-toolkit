@@ -87,7 +87,7 @@ If legacy folders such as `app/Models`, `app/Services`, or `app/Repositories` ex
 Create a module:
 
 ```bash
-php artisan make:domain Order
+php artisan make:module Order
 ```
 
 Create domain and application classes:
