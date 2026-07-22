@@ -4,7 +4,7 @@ namespace SamuelNunes\LaravelDddToolkit\Commands;
 
 class MakeRepositoryCommand extends AbstractClassGeneratorCommand
 {
-    protected $signature = 'make:repository {name : The repository class name} {--module= : The target module} {--force : Overwrite existing files even when repositories are disabled}';
+    protected $signature = 'make:repository {module : The target module} {name : The repository class name} {--force : Overwrite existing files even when repositories are disabled}';
 
     protected $description = 'Create an optional repository inside a module infrastructure layer.';
 

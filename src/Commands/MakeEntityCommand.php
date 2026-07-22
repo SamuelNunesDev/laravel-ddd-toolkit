@@ -4,7 +4,7 @@ namespace SamuelNunes\LaravelDddToolkit\Commands;
 
 class MakeEntityCommand extends AbstractClassGeneratorCommand
 {
-    protected $signature = 'make:entity {name : The entity class name} {--module= : The target module} {--force : Overwrite existing files}';
+    protected $signature = 'make:entity {module : The target module} {name : The entity class name} {--force : Overwrite existing files}';
 
     protected $description = 'Create a domain entity inside a module.';
 

@@ -5,6 +5,11 @@ namespace SamuelNunes\LaravelDddToolkit\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use InvalidArgumentException;
+use PhpParser\Error;
+use PhpParser\Node;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitorAbstract;
+use PhpParser\ParserFactory;
 use SamuelNunes\LaravelDddToolkit\Discovery\ModuleDiscovery;
 use SamuelNunes\LaravelDddToolkit\Support\ModulePaths;
 
@@ -104,10 +109,10 @@ class DddCheckCommand extends Command
     }
 
     /**
-     * @param array<string, string> $forbiddenImports
+     * @param array<string, string> $forbiddenReferences
      * @return array<int, string>
      */
-    private function violationsForLayer(Filesystem $files, string $modulePath, string $layer, array $forbiddenImports): array
+    private function violationsForLayer(Filesystem $files, string $modulePath, string $layer, array $forbiddenReferences): array
     {
         $directory = $modulePath . DIRECTORY_SEPARATOR . $layer;
 
@@ -122,10 +127,16 @@ class DddCheckCommand extends Command
                 continue;
             }
 
-            $contents = $files->get($file->getPathname());
+            try {
+                $references = $this->referencesFromFile($files->get($file->getPathname()));
+            } catch (Error $error) {
+                $violations[] = "[{$this->relativePath($file->getPathname())}]\n\nViolation:\nCould not parse PHP file: {$error->getMessage()}\n\nRule:\nddd:check requires valid PHP files.\n";
 
-            foreach ($forbiddenImports as $import => $message) {
-                if (! str_contains($contents, $import)) {
+                continue;
+            }
+
+            foreach ($forbiddenReferences as $forbiddenReference => $message) {
+                if (! $this->referencesForbiddenNamespace($references, $forbiddenReference)) {
                     continue;
                 }
 
@@ -134,6 +145,70 @@ class DddCheckCommand extends Command
         }
 
         return $violations;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function referencesFromFile(string $contents): array
+    {
+        $parser = (new ParserFactory())->createForNewestSupportedVersion();
+        $statements = $parser->parse($contents) ?? [];
+        $visitor = new class extends NodeVisitorAbstract {
+            /**
+             * @var array<int, string>
+             */
+            public array $references = [];
+
+            public function enterNode(Node $node): ?int
+            {
+                if ($node instanceof Node\Stmt\Use_) {
+                    foreach ($node->uses as $use) {
+                        $this->references[] = $use->name->toString();
+                    }
+
+                    return null;
+                }
+
+                if ($node instanceof Node\Name\FullyQualified) {
+                    $this->references[] = $node->toString();
+                }
+
+                return null;
+            }
+        };
+
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor($visitor);
+        $traverser->traverse($statements);
+
+        return array_values(array_unique($visitor->references));
+    }
+
+    /**
+     * @param array<int, string> $references
+     */
+    private function referencesForbiddenNamespace(array $references, string $forbiddenReference): bool
+    {
+        $forbiddenReference = trim($forbiddenReference, '\\');
+
+        foreach ($references as $reference) {
+            $reference = trim($reference, '\\');
+
+            if ($reference === $forbiddenReference || str_starts_with($reference, $forbiddenReference . '\\')) {
+                return true;
+            }
+
+            if (str_contains($reference, '\\' . $forbiddenReference . '\\') || str_ends_with($reference, '\\' . $forbiddenReference)) {
+                return true;
+            }
+
+            if ($forbiddenReference === 'Infrastructure' && str_contains($reference, '\\Infrastructure\\')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function relativePath(string $path): string

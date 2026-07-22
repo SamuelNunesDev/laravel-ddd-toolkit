@@ -4,7 +4,7 @@ namespace SamuelNunes\LaravelDddToolkit\Commands;
 
 class MakeListenerCommand extends AbstractClassGeneratorCommand
 {
-    protected $signature = 'make:listener {name : The listener class name} {--module= : The target module} {--force : Overwrite existing files}';
+    protected $signature = 'make:listener {module : The target module} {name : The listener class name} {--force : Overwrite existing files}';
 
     protected $description = 'Create a Laravel listener inside a module infrastructure layer.';
 

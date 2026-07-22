@@ -6,14 +6,12 @@ use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
-use SamuelNunes\LaravelDddToolkit\Commands\Concerns\ResolvesModules;
 use SamuelNunes\LaravelDddToolkit\Commands\Concerns\WritesFiles;
 use SamuelNunes\LaravelDddToolkit\Support\ModulePaths;
 use SamuelNunes\LaravelDddToolkit\Support\StubRenderer;
 
 abstract class AbstractClassGeneratorCommand extends Command
 {
-    use ResolvesModules;
     use WritesFiles;
 
     protected Filesystem $files;
@@ -35,15 +33,9 @@ abstract class AbstractClassGeneratorCommand extends Command
         $this->stubs = new StubRenderer($this->laravel, $files);
 
         try {
-            $module = $this->resolveModuleName();
+            $module = $this->modulePaths->moduleName((string) $this->argument('module'));
         } catch (InvalidArgumentException $exception) {
             $this->components->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        if ($module === null) {
-            $this->components->error('Unable to infer the module. Pass the module explicitly with [--module=ModuleName].');
 
             return self::FAILURE;
         }
@@ -75,5 +67,16 @@ abstract class AbstractClassGeneratorCommand extends Command
     protected function className(): string
     {
         return Str::studly((string) $this->argument('name'));
+    }
+
+    protected function requireExistingModule(string $module): bool
+    {
+        if ($this->files->isDirectory($this->modulePaths->modulePath($module))) {
+            return true;
+        }
+
+        $this->components->error("Module [{$module}] does not exist. Run [php artisan make:module {$module}] first.");
+
+        return false;
     }
 }

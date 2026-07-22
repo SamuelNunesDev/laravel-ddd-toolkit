@@ -4,7 +4,7 @@ namespace SamuelNunes\LaravelDddToolkit\Commands;
 
 class MakeValueObjectCommand extends AbstractClassGeneratorCommand
 {
-    protected $signature = 'make:value-object {name : The value object class name} {--module= : The target module} {--force : Overwrite existing files}';
+    protected $signature = 'make:value-object {module : The target module} {name : The value object class name} {--force : Overwrite existing files}';
 
     protected $description = 'Create a domain value object inside a module.';
 

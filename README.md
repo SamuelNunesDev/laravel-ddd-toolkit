@@ -125,9 +125,9 @@ php artisan make:module Order
 Create tactical domain and application classes:
 
 ```bash
-php artisan make:entity Order --module=Order
-php artisan make:value-object Email --module=Customer
-php artisan make:event OrderCancelled --module=Order
+php artisan make:entity Order Order
+php artisan make:value-object Customer Email
+php artisan make:event Order OrderCancelled
 php artisan make:usecase Order CancelOrder
 ```
 
@@ -301,7 +301,7 @@ Create repositories or outbound ports only when they solve a real problem, such 
 Force a repository generation:
 
 ```bash
-php artisan make:repository OrderRepository --module=Order --force
+php artisan make:repository Order OrderRepository --force
 ```
 
 For hexagonal persistence boundaries, prefer an outbound port plus an infrastructure adapter:
@@ -343,16 +343,16 @@ composer test
 
 The test suite uses Orchestra Testbench to validate package behavior against Laravel.
 
-Run static analysis with Psalm:
+Run static analysis:
 
 ```bash
-vendor/bin/psalm --no-cache --show-info=false
+composer analyse
 ```
 
-Run Psalm with taint analysis enabled:
+Run the full local check:
 
 ```bash
-vendor/bin/psalm --no-cache --show-info=false --taint-analysis
+composer check
 ```
 
 When PHP or Composer are not available on the host machine, the same checks can be run with the Psalm Docker image:

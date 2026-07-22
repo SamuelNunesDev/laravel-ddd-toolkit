@@ -4,7 +4,7 @@ namespace SamuelNunes\LaravelDddToolkit\Commands;
 
 class MakePolicyCommand extends AbstractClassGeneratorCommand
 {
-    protected $signature = 'make:policy {name : The policy class name} {--module= : The target module} {--force : Overwrite existing files even when policies are disabled}';
+    protected $signature = 'make:policy {module : The target module} {name : The policy class name} {--force : Overwrite existing files even when policies are disabled}';
 
     protected $description = 'Create a policy inside a module infrastructure layer.';
 

@@ -10,8 +10,8 @@ class ClassGeneratorsTest extends TestCase
     public function test_it_generates_mvp_classes_in_the_expected_namespaces(): void
     {
         $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
-        $this->artisan('make:entity', ['name' => 'Order', '--module' => 'Order'])->assertSuccessful();
-        $this->artisan('make:value-object', ['name' => 'Email', '--module' => 'Order'])->assertSuccessful();
+        $this->artisan('make:entity', ['module' => 'Order', 'name' => 'Order'])->assertSuccessful();
+        $this->artisan('make:value-object', ['module' => 'Order', 'name' => 'Email'])->assertSuccessful();
         $this->artisan('make:usecase', ['module' => 'Order', 'name' => 'CancelOrder'])->assertSuccessful();
 
         $files = new Filesystem();
@@ -35,12 +35,12 @@ class ClassGeneratorsTest extends TestCase
     public function test_it_does_not_overwrite_without_force(): void
     {
         $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
-        $this->artisan('make:entity', ['name' => 'Order', '--module' => 'Order', '--force' => true])->assertSuccessful();
+        $this->artisan('make:entity', ['module' => 'Order', 'name' => 'Order', '--force' => true])->assertSuccessful();
 
         $path = base_path('app/Modules/Order/Domain/Entities/Order.php');
         (new Filesystem())->put($path, 'custom contents');
 
-        $this->artisan('make:entity', ['name' => 'Order', '--module' => 'Order'])->assertFailed();
+        $this->artisan('make:entity', ['module' => 'Order', 'name' => 'Order'])->assertFailed();
 
         $this->assertSame('custom contents', (new Filesystem())->get($path));
     }
@@ -49,7 +49,7 @@ class ClassGeneratorsTest extends TestCase
     {
         $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
 
-        $this->artisan('make:repository', ['name' => 'OrderRepository', '--module' => 'Order'])->assertFailed();
+        $this->artisan('make:repository', ['module' => 'Order', 'name' => 'OrderRepository'])->assertFailed();
 
         $this->assertFalse((new Filesystem())->exists(base_path('app/Modules/Order/Infrastructure/Persistence/Repositories/OrderRepository.php')));
     }
@@ -63,11 +63,11 @@ class ClassGeneratorsTest extends TestCase
 
         $this->artisan('make:module', ['name' => 'Payment'])->assertSuccessful();
         $this->artisan('make:integration', ['module' => 'Payment', 'name' => 'Stripe'])->assertSuccessful();
-        $this->artisan('make:event', ['name' => 'OrderCancelled', '--module' => 'Payment'])->assertSuccessful();
-        $this->artisan('make:listener', ['name' => 'RefundPayment', '--module' => 'Payment'])->assertSuccessful();
-        $this->artisan('make:policy', ['name' => 'PaymentPolicy', '--module' => 'Payment'])->assertSuccessful();
-        $this->artisan('make:repository', ['name' => 'PaymentRepository', '--module' => 'Payment'])->assertSuccessful();
-        $this->artisan('make:aggregate', ['name' => 'PaymentAggregate', '--module' => 'Payment'])->assertSuccessful();
+        $this->artisan('make:event', ['module' => 'Payment', 'name' => 'OrderCancelled'])->assertSuccessful();
+        $this->artisan('make:listener', ['module' => 'Payment', 'name' => 'RefundPayment'])->assertSuccessful();
+        $this->artisan('make:policy', ['module' => 'Payment', 'name' => 'PaymentPolicy'])->assertSuccessful();
+        $this->artisan('make:repository', ['module' => 'Payment', 'name' => 'PaymentRepository'])->assertSuccessful();
+        $this->artisan('make:aggregate', ['module' => 'Payment', 'name' => 'PaymentAggregate'])->assertSuccessful();
 
         $files = new Filesystem();
 

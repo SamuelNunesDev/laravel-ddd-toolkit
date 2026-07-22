@@ -4,7 +4,7 @@ namespace SamuelNunes\LaravelDddToolkit\Commands;
 
 class MakeEventCommand extends AbstractClassGeneratorCommand
 {
-    protected $signature = 'make:event {name : The domain event class name} {--module= : The target module} {--force : Overwrite existing files}';
+    protected $signature = 'make:event {module : The target module} {name : The domain event class name} {--force : Overwrite existing files}';
 
     protected $description = 'Create a domain event inside a module.';
 

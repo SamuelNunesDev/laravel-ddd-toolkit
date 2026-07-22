@@ -20,12 +20,24 @@ class DddCheckCommandTest extends TestCase
 
         (new Filesystem())->put(
             base_path('app/Modules/Order/Domain/Entities/Order.php'),
-            "<?php\n\nnamespace App\\Modules\\Order\\Domain\\Entities;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass Order extends Model\n{\n}\n",
+            "<?php\n\nnamespace App\\Modules\\Order\\Domain\\Entities;\n\nuse Illuminate\\Database\\Eloquent\\Model as BaseModel;\n\nclass Order extends BaseModel\n{\n}\n",
         );
 
         $this->artisan('ddd:check')
             ->expectsOutputToContain('Domain layer imports Laravel Illuminate classes.')
             ->assertFailed();
+    }
+
+    public function test_it_ignores_forbidden_namespaces_inside_comments_and_strings(): void
+    {
+        $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
+
+        (new Filesystem())->put(
+            base_path('app/Modules/Order/Domain/Entities/Order.php'),
+            "<?php\n\nnamespace App\\Modules\\Order\\Domain\\Entities;\n\nclass Order\n{\n    public string \$example = 'Illuminate\\\\Database\\\\Eloquent\\\\Model';\n\n    // App\\Modules\\Order\\Infrastructure\\Persistence\\Models\\OrderModel\n}\n",
+        );
+
+        $this->artisan('ddd:check')->assertSuccessful();
     }
 
     public function test_it_detects_application_violations_for_a_single_module(): void
