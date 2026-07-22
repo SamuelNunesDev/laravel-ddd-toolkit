@@ -42,6 +42,7 @@ abstract class TestCase extends Orchestra
         $files->delete(dirname(__DIR__) . '/vendor/orchestra/testbench-core/laravel/config/ddd.php');
         $files->deleteDirectory($basePath . '/app');
         $files->deleteDirectory($basePath . '/config');
+        $files->deleteDirectory($basePath . '/docs');
         $files->deleteDirectory($basePath . '/stubs');
         $files->delete($basePath . '/AGENTS.md');
         $files->delete($basePath . '/bootstrap/cache/ddd-modules.php');

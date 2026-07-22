@@ -135,3 +135,9 @@ Before finishing changes that affect modules, layers, namespaces or generated co
 ```bash
 php artisan ddd:check
 ```
+
+## Module-level AI docs
+
+New modules may include their own `README.md` and `AGENTS.md`.
+
+Module-level `AGENTS.md` files provide more specific instructions for that module and should be respected over generic project-level guidance when editing files inside the module.

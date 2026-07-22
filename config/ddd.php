@@ -21,6 +21,22 @@ return [
         'publish_on_install' => true,
     ],
 
+    'ai_docs' => [
+        'enabled' => true,
+
+        'module_readme' => [
+            'enabled' => true,
+            'filename' => 'README.md',
+        ],
+
+        'module_agents' => [
+            'enabled' => true,
+            'filename' => 'AGENTS.md',
+        ],
+
+        'ask_context_on_module_creation' => true,
+    ],
+
     'presets' => [
         'hexagonal' => [
             'directories' => [

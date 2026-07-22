@@ -183,6 +183,41 @@ Then run the architecture checker:
 php artisan ddd:check --module=Order
 ```
 
+## Module AI docs
+
+When creating a module, Laravel DDD Toolkit can generate module-level documentation for humans and AI agents.
+
+```bash
+php artisan make:module Billing
+```
+
+You can provide context directly:
+
+```bash
+php artisan make:module Billing --context="Handles invoice issuing, cancellation and invoice queries."
+```
+
+Or from a file:
+
+```bash
+php artisan make:module Billing --context-file=docs/billing-context.md
+```
+
+To skip AI docs:
+
+```bash
+php artisan make:module Billing --no-ai-docs
+```
+
+Generated files:
+
+```text
+app/Modules/Billing/README.md
+app/Modules/Billing/AGENTS.md
+```
+
+These files do not use AI. They are generated from templates using the context provided by the developer.
+
 ## Core Commands
 
 Create a module:
