@@ -2,6 +2,8 @@
 
 Laravel DDD Toolkit is a Composer package for building large, modular Laravel applications with vertical modules, hexagonal architecture by default, and pragmatic tactical DDD patterns.
 
+**Website:** [samuelnunesdev.github.io/laravel-ddd-toolkit-site](https://samuelnunesdev.github.io/laravel-ddd-toolkit-site/)
+
 It organizes the application vertically by business capability, such as `Order`, `Payment`, `Customer`, or `Billing`, while keeping the Laravel experience familiar: Artisan commands, service providers, routes, Eloquent, jobs, listeners, requests, and controllers still work as expected.
 
 This package is intentionally pragmatic. It is not an academic DDD framework, it does not replace Laravel, and it does not force CQRS, Event Sourcing, repositories, or a rigid architecture on every project.
@@ -9,16 +11,20 @@ This package is intentionally pragmatic. It is not an academic DDD framework, it
 ## Summary
 
 - [Why This Exists](#why-this-exists)
+- [Compatibility](#compatibility)
 - [Architecture](#architecture)
 - [Installation](#installation)
+- [Quick Start](#quick-start)
 - [Core Commands](#core-commands)
 - [Generated Structure](#generated-structure)
+- [Generated Code Example](#generated-code-example)
 - [Presets](#presets)
 - [Discovery Cache](#discovery-cache)
 - [Architecture Checks](#architecture-checks)
 - [Configuration](#configuration)
 - [Repositories And Eloquent](#repositories-and-eloquent)
 - [Custom Stubs](#custom-stubs)
+- [Contributing](#contributing)
 - [Development](#development)
 - [License](#license)
 
@@ -45,6 +51,11 @@ app/
 ```
 
 Each module is a feature, business capability, subdomain, or bounded context depending on the size of the application.
+
+## Compatibility
+
+- PHP: `^8.2`
+- Laravel components: `^11.0`, `^12.0`, or `^13.0`
 
 ## Architecture
 
@@ -113,6 +124,23 @@ bootstrap/providers.php
 ```
 
 If legacy folders such as `app/Models`, `app/Services`, or `app/Repositories` exist, the command may ask if you want to review them. It never removes those folders automatically.
+
+## Quick Start
+
+Create an `Order` module, define an outbound persistence port, bind it to an Eloquent adapter, and create a use case:
+
+```bash
+php artisan make:module Order
+php artisan make:port Order OrderRepository --type=out
+php artisan make:adapter Order EloquentOrderRepository --port=OrderRepository --type=persistence
+php artisan make:usecase Order CancelOrder
+```
+
+Then run the architecture checker:
+
+```bash
+php artisan ddd:check --module=Order
+```
 
 ## Core Commands
 
@@ -185,6 +213,43 @@ app/Modules/Order/
 ```
 
 `Domain/Contracts` is not created by the default preset. Use explicit ports in `Application/Ports/In` and `Application/Ports/Out` instead.
+
+## Generated Code Example
+
+An outbound Port is generated as a PHP interface in the application layer:
+
+```php
+<?php
+
+namespace App\Modules\Order\Application\Ports\Out;
+
+interface OrderRepository
+{
+}
+```
+
+A persistence Adapter can implement that Port from the infrastructure layer:
+
+```php
+<?php
+
+namespace App\Modules\Order\Infrastructure\Persistence\Adapters;
+
+use App\Modules\Order\Application\Ports\Out\OrderRepository;
+
+final class EloquentOrderRepository implements OrderRepository
+{
+}
+```
+
+When possible, the adapter command also registers the binding in the module provider:
+
+```php
+$this->app->bind(
+    \App\Modules\Order\Application\Ports\Out\OrderRepository::class,
+    \App\Modules\Order\Infrastructure\Persistence\Adapters\EloquentOrderRepository::class,
+);
+```
 
 ## Presets
 
@@ -326,6 +391,14 @@ stubs/vendor/laravel-ddd-toolkit
 ```
 
 When a custom stub exists there, the generator uses it instead of the package default.
+
+## Contributing
+
+Contributions are welcome. Before opening a pull request, run:
+
+```bash
+composer check
+```
 
 ## Development
 
