@@ -19,7 +19,10 @@ class ModulesServiceProviderTest extends TestCase
             "<?php\n\nuse Illuminate\\Support\\Facades\\Route;\n\nRoute::get('/orders/ping', fn () => 'pong')->name('orders.ping');\n",
         );
 
-        require_once base_path('app/Providers/ModulesServiceProvider.php');
+        if (! class_exists(\App\Providers\ModulesServiceProvider::class)) {
+            require_once base_path('app/Providers/ModulesServiceProvider.php');
+        }
+
         (new \App\Providers\ModulesServiceProvider(app()))->boot();
         Route::getRoutes()->refreshNameLookups();
 
@@ -50,7 +53,10 @@ class OrderServiceProvider extends ServiceProvider
 }
 PHP);
 
-        require_once base_path('app/Providers/ModulesServiceProvider.php');
+        if (! class_exists(\App\Providers\ModulesServiceProvider::class)) {
+            require_once base_path('app/Providers/ModulesServiceProvider.php');
+        }
+
         (new \App\Providers\ModulesServiceProvider(app()))->register();
 
         $this->assertTrue(app('order-provider-loaded'));

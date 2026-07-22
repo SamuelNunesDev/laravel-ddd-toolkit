@@ -10,13 +10,13 @@ use SamuelNunes\LaravelDddToolkit\Commands\Concerns\WritesFiles;
 use SamuelNunes\LaravelDddToolkit\Support\ModulePaths;
 use SamuelNunes\LaravelDddToolkit\Support\StubRenderer;
 
-class MakeUsecaseCommand extends Command
+class MakePortCommand extends Command
 {
     use WritesFiles;
 
-    protected $signature = 'make:usecase {module : The target module} {name : The use case name} {--force : Overwrite existing files}';
+    protected $signature = 'make:port {module : The target module} {name : The port interface name} {--type=out : Port type: in or out} {--force : Overwrite existing files}';
 
-    protected $description = 'Create an application use case inside a module.';
+    protected $description = 'Create an application port interface inside a module.';
 
     protected Filesystem $files;
 
@@ -28,6 +28,7 @@ class MakeUsecaseCommand extends Command
 
         try {
             $module = $modulePaths->moduleName((string) $this->argument('module'));
+            $type = $this->portType();
         } catch (InvalidArgumentException $exception) {
             $this->components->error($exception->getMessage());
 
@@ -41,28 +42,29 @@ class MakeUsecaseCommand extends Command
         }
 
         $class = Str::studly((string) $this->argument('name'));
-        $namespace = $modulePaths->moduleNamespace($module) . "\\Application\\UseCases\\{$class}";
-        $directory = $modulePaths->modulePath($module) . DIRECTORY_SEPARATOR . "Application/UseCases/{$class}";
-        $force = (bool) $this->option('force');
+        $segment = $type === 'in' ? 'In' : 'Out';
+        $namespace = $modulePaths->moduleNamespace($module) . "\\Application\\Ports\\{$segment}";
+        $path = $modulePaths->modulePath($module) . DIRECTORY_SEPARATOR . "Application/Ports/{$segment}/{$class}.php";
 
-        $created = false;
+        return $this->writeFile(
+            $path,
+            $stubs->render('port.stub', [
+                'namespace' => $namespace,
+                'class' => $class,
+                'module' => $module,
+            ]),
+            (bool) $this->option('force'),
+        ) ? self::SUCCESS : self::FAILURE;
+    }
 
-        foreach ([
-            "{$class}Command.php" => 'usecase-command.stub',
-            "{$class}Handler.php" => 'usecase-handler.stub',
-            "{$class}Result.php" => 'usecase-result.stub',
-        ] as $filename => $stub) {
-            $created = $this->writeFile(
-                $directory . DIRECTORY_SEPARATOR . $filename,
-                $stubs->render($stub, [
-                    'namespace' => $namespace,
-                    'class' => $class,
-                    'module' => $module,
-                ]),
-                $force,
-            ) || $created;
+    private function portType(): string
+    {
+        $type = strtolower((string) $this->option('type'));
+
+        if (! in_array($type, ['in', 'out'], true)) {
+            throw new InvalidArgumentException("Invalid port type [{$type}]. Use [in] or [out].");
         }
 
-        return $created ? self::SUCCESS : self::FAILURE;
+        return $type;
     }
 }

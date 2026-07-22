@@ -1,0 +1,9 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ port_use }}
+
+final class {{ class }}{{ implements }}
+{
+}

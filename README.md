@@ -1,19 +1,21 @@
 # Laravel DDD Toolkit
 
-Laravel DDD Toolkit is a Composer package for building modular Laravel applications with tactical DDD patterns, without turning Laravel into a different framework.
+Laravel DDD Toolkit is a Composer package for building large, modular Laravel applications with vertical modules, hexagonal architecture by default, and pragmatic tactical DDD patterns.
 
-It helps organize large Laravel codebases by business capability, using a vertical modular structure such as `app/Modules/Order`, `app/Modules/User`, and `app/Modules/Payment`, while keeping the Laravel experience familiar: Artisan commands, service providers, routes, Eloquent, jobs, listeners, requests, and controllers still work as expected.
+It organizes the application vertically by business capability, such as `Order`, `Payment`, `Customer`, or `Billing`, while keeping the Laravel experience familiar: Artisan commands, service providers, routes, Eloquent, jobs, listeners, requests, and controllers still work as expected.
 
-This package is intentionally pragmatic. It is not an academic DDD framework, it does not replace Eloquent, and it does not force repositories, CQRS, Event Sourcing, or a rigid architecture on every project.
+This package is intentionally pragmatic. It is not an academic DDD framework, it does not replace Laravel, and it does not force CQRS, Event Sourcing, repositories, or a rigid architecture on every project.
 
 ## Summary
 
 - [Why This Exists](#why-this-exists)
-- [Philosophy](#philosophy)
+- [Architecture](#architecture)
 - [Installation](#installation)
 - [Core Commands](#core-commands)
 - [Generated Structure](#generated-structure)
-- [Auto Discovery](#auto-discovery)
+- [Presets](#presets)
+- [Discovery Cache](#discovery-cache)
+- [Architecture Checks](#architecture-checks)
 - [Configuration](#configuration)
 - [Repositories And Eloquent](#repositories-and-eloquent)
 - [Custom Stubs](#custom-stubs)
@@ -28,35 +30,65 @@ Laravel is productive and expressive, but large applications often become hard t
 - services become generic dumping grounds;
 - business rules spread across models, requests, jobs, and listeners;
 - related files live far apart from each other;
-- bounded contexts become hard to see;
+- module boundaries become hard to see;
 - teams struggle to change one business area without touching another.
 
-Laravel DDD Toolkit addresses this by encouraging a modular monolith organized by domain:
+Laravel DDD Toolkit addresses this by encouraging a modular monolith organized by business capability:
 
 ```text
 app/
   Modules/
     Order/
     Payment/
-    User/
+    Customer/
   Shared/
 ```
 
-Each module is a business capability. The goal is not purity. The goal is making long-lived Laravel applications easier to understand, change, and grow.
+Each module is a feature, business capability, subdomain, or bounded context depending on the size of the application.
 
-## Philosophy
+## Architecture
 
-This package follows a few strong opinions:
+The toolkit combines two complementary ideas:
 
-- **Laravel first:** the framework remains the foundation. The toolkit adds structure, not a replacement runtime.
-- **Tactical DDD only:** entities, value objects, domain events, use cases, contracts, and module boundaries are encouraged; strategic DDD ceremony is not required.
-- **Vertical organization:** code is grouped by feature or domain instead of only by technical layer.
-- **Pragmatism over purity:** use the pattern when it helps. Skip it when it adds noise.
-- **Eloquent is supported:** Active Record is part of Laravel's productivity story and should coexist with domain-oriented code.
-- **Repositories are optional:** create repositories only when they add value, such as hiding complex persistence, integrating external storage, or protecting domain code from query details.
-- **Convention over configuration:** defaults should work for most projects, with configuration available when the project needs it.
+```text
+Vertical architecture organizes the project by module or business capability.
 
-In short: this package tries to help Laravel projects age well without fighting the framework.
+Hexagonal architecture organizes dependencies inside each module through Ports and Adapters.
+```
+
+The default positioning is:
+
+```text
+Vertical modules
++ Hexagonal architecture inside each module
++ Pragmatic tactical DDD
+```
+
+Dependency direction is separate from execution flow.
+
+Allowed dependency direction:
+
+```text
+Infrastructure -> Application -> Domain
+Infrastructure -> Application Ports
+Domain does not depend on Infrastructure
+Application does not depend on Controllers, Requests, or persistence Models
+```
+
+Typical execution flow:
+
+```text
+HTTP
+  -> Controller
+  -> Application Use Case
+  -> Domain
+  -> Port
+  -> Adapter
+```
+
+Ports live in `Application/Ports/In` and `Application/Ports/Out`. Adapters live in `Infrastructure`.
+
+An external integration can act as an anti-corruption layer when it protects the domain from external APIs, payloads, SDK models, or vendor-specific concepts. ACL is treated as a role an integration can play, not as the primary command name.
 
 ## Installation
 
@@ -90,73 +122,93 @@ Create a module:
 php artisan make:module Order
 ```
 
-Create domain and application classes:
+Create tactical domain and application classes:
 
 ```bash
 php artisan make:entity Order --module=Order
-php artisan make:value-object Email --module=User
-php artisan make:usecase CancelOrder --module=Order
+php artisan make:value-object Email --module=Customer
+php artisan make:event OrderCancelled --module=Order
+php artisan make:usecase Order CancelOrder
 ```
 
-Create integration and infrastructure classes:
+Create Ports and Adapters:
 
 ```bash
-php artisan make:acl Stripe --module=Payment
-php artisan make:event OrderCancelled --module=Order
-php artisan make:listener RefundPayment --module=Payment
-php artisan make:policy OrderPolicy --module=Order
-php artisan make:repository OrderRepository --module=Order
-php artisan make:aggregate OrderAggregate --module=Order
+php artisan make:port Order OrderRepository --type=out
+php artisan make:port Order CancelOrderUseCase --type=in
+php artisan make:adapter Order EloquentOrderRepository --port=OrderRepository --type=persistence
 ```
 
-Generators are idempotent by default. Existing files are not overwritten unless you pass `--force`.
+Create an external integration:
+
+```bash
+php artisan make:integration Payment Stripe
+```
+
+Run architecture checks and discovery cache commands:
+
+```bash
+php artisan ddd:check
+php artisan ddd:cache
+php artisan ddd:clear
+```
+
+Existing files are not overwritten unless you pass `--force`.
 
 ## Generated Structure
 
-By default, a module is created like this:
+By default, `make:module` creates a vertical module with hexagonal structure:
 
 ```text
 app/Modules/Order/
-  Domain/
-    Entities/
-    ValueObjects/
-    Events/
-    Exceptions/
-    Contracts/
-  Application/
-    Commands/
-    Queries/
-    DTO/
-    Handlers/
-  Infrastructure/
-    Http/
-      Controllers/
-      Requests/
-      routes.php
-    Persistence/
-      Models/
-      Repositories/
-    Integrations/
-    Jobs/
-    Listeners/
-    Providers/
+├── Domain/
+│   ├── Entities/
+│   ├── ValueObjects/
+│   ├── Events/
+│   └── Exceptions/
+├── Application/
+│   ├── UseCases/
+│   ├── DTO/
+│   └── Ports/
+│       ├── In/
+│       └── Out/
+└── Infrastructure/
+    ├── Http/
+    │   ├── Controllers/
+    │   ├── Requests/
+    │   └── routes.php
+    ├── Persistence/
+    │   ├── Models/
+    │   └── Adapters/
+    ├── Integrations/
+    └── Providers/
 ```
 
-The intended dependency direction is:
+`Domain/Contracts` is not created by the default preset. Use explicit ports in `Application/Ports/In` and `Application/Ports/Out` instead.
 
-```text
-HTTP
-  -> Controller
-  -> Application handler / use case
-  -> Domain
-  -> Persistence or integration
+## Presets
+
+Hexagonal is the default:
+
+```bash
+php artisan make:module Order
 ```
 
-The domain layer should contain business concepts and rules. It should not contain controllers, HTTP requests, jobs, or Laravel-specific infrastructure.
+This is equivalent to:
 
-## Auto Discovery
+```bash
+php artisan make:module Order --preset=hexagonal
+```
 
-The generated `ModulesServiceProvider` automatically discovers module resources.
+Alternative presets are available when a project needs less or more structure:
+
+- `minimal`: creates only `Domain`, `Application`, and `Infrastructure`.
+- `tactical`: creates tactical DDD directories without explicit Ports and Adapters.
+- `full`: includes aggregates, ports, adapters, repositories, jobs, listeners, policies, integrations, and providers.
+
+## Discovery Cache
+
+The generated `ModulesServiceProvider` discovers module routes and providers automatically.
 
 It loads route files from:
 
@@ -170,7 +222,47 @@ It registers module service providers from:
 app/Modules/{Module}/Infrastructure/Providers/*ServiceProvider.php
 ```
 
-This means a module can own its routes and providers without requiring manual edits to `routes/api.php` or the application provider list for every new module.
+For production, cache discovery into a manifest:
+
+```bash
+php artisan ddd:cache
+```
+
+The manifest is written to:
+
+```text
+bootstrap/cache/ddd-modules.php
+```
+
+Clear it with:
+
+```bash
+php artisan ddd:clear
+```
+
+When the cache exists, discovery uses the manifest. When it does not exist, filesystem discovery is used.
+
+## Architecture Checks
+
+Run:
+
+```bash
+php artisan ddd:check
+```
+
+By default, this validates basic hexagonal rules:
+
+- `Domain` must not import Laravel, HTTP foundation, Guzzle, or module Infrastructure classes.
+- `Application` must not import controllers, HTTP requests, or persistence models.
+- `Infrastructure` may depend on `Application`, `Application/Ports`, and `Domain`.
+
+Validate a single module:
+
+```bash
+php artisan ddd:check --module=Order
+```
+
+The command does not alter files and returns a non-zero exit code when violations are found, so it can be used in CI.
 
 ## Configuration
 
@@ -184,24 +276,19 @@ Default options:
 
 ```php
 return [
+    'default_preset' => 'hexagonal',
     'modules_path' => 'app/Modules',
     'shared_path' => 'app/Shared',
-    'default_domain_structure' => true,
     'create_repositories' => false,
     'create_policies' => false,
     'create_jobs' => true,
     'create_events' => true,
-    'preset' => 'default',
 ];
 ```
 
-Available presets:
-
-- `minimal`: creates only `Domain`, `Application`, and `Infrastructure`.
-- `default`: creates the standard tactical DDD module structure.
-- `full`: includes additional directories for aggregates, policies, repositories, jobs, events, and integrations.
-
 ## Repositories And Eloquent
+
+Eloquent is supported. Active Record is part of Laravel's productivity story and can coexist with domain-oriented code.
 
 Repositories are disabled by default:
 
@@ -209,24 +296,19 @@ Repositories are disabled by default:
 'create_repositories' => false,
 ```
 
-That is intentional. In many Laravel applications, Eloquent models and query builders are enough and more readable than a repository layer.
+Create repositories or outbound ports only when they solve a real problem, such as hiding complex persistence, integrating external storage, or protecting application/domain code from query details.
 
-Enable repositories when they solve a real problem:
-
-```php
-'create_repositories' => true,
-```
-
-Or force a single repository generation:
+Force a repository generation:
 
 ```bash
 php artisan make:repository OrderRepository --module=Order --force
 ```
 
-The same principle applies to policies:
+For hexagonal persistence boundaries, prefer an outbound port plus an infrastructure adapter:
 
-```php
-'create_policies' => true,
+```bash
+php artisan make:port Order OrderRepository --type=out
+php artisan make:adapter Order EloquentOrderRepository --port=OrderRepository --type=persistence
 ```
 
 ## Custom Stubs

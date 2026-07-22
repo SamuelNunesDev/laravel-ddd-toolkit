@@ -2,6 +2,6 @@
 
 namespace {{ namespace }};
 
-class {{ class }}
+class {{ integration }}Client
 {
 }

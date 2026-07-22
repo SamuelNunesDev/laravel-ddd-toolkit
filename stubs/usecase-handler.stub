@@ -1,0 +1,11 @@
+<?php
+
+namespace {{ namespace }};
+
+final class {{ class }}Handler
+{
+    public function handle({{ class }}Command $command): {{ class }}Result
+    {
+        return new {{ class }}Result();
+    }
+}

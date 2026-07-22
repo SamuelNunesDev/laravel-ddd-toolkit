@@ -8,15 +8,9 @@ use SamuelNunes\LaravelDddToolkit\LaravelDddToolkitServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
-    protected static ?string $appBasePath = null;
-
     public static function applicationBasePath()
     {
-        if (static::$appBasePath === null) {
-            static::$appBasePath = sys_get_temp_dir() . '/laravel-ddd-toolkit-tests/' . str_replace('\\', '_', static::class);
-        }
-
-        return static::$appBasePath;
+        return sys_get_temp_dir() . '/laravel-ddd-toolkit-tests/' . str_replace('\\', '_', static::class);
     }
 
     protected function setUp(): void
@@ -45,9 +39,11 @@ abstract class TestCase extends Orchestra
         $files = new Filesystem();
         $basePath = static::applicationBasePath();
 
+        $files->delete(dirname(__DIR__) . '/vendor/orchestra/testbench-core/laravel/config/ddd.php');
         $files->deleteDirectory($basePath . '/app');
         $files->deleteDirectory($basePath . '/config');
         $files->deleteDirectory($basePath . '/stubs');
+        $files->delete($basePath . '/bootstrap/cache/ddd-modules.php');
         $files->ensureDirectoryExists($basePath . '/bootstrap');
         $files->ensureDirectoryExists($basePath . '/bootstrap/cache');
         $files->ensureDirectoryExists($basePath . '/storage/framework/cache');

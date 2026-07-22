@@ -4,13 +4,18 @@ namespace SamuelNunes\LaravelDddToolkit;
 
 use Illuminate\Support\ServiceProvider;
 use SamuelNunes\LaravelDddToolkit\Commands\DddInstallCommand;
-use SamuelNunes\LaravelDddToolkit\Commands\MakeAclCommand;
+use SamuelNunes\LaravelDddToolkit\Commands\DddCacheCommand;
+use SamuelNunes\LaravelDddToolkit\Commands\DddCheckCommand;
+use SamuelNunes\LaravelDddToolkit\Commands\DddClearCommand;
+use SamuelNunes\LaravelDddToolkit\Commands\MakeAdapterCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeAggregateCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeModuleCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeEntityCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeEventCommand;
+use SamuelNunes\LaravelDddToolkit\Commands\MakeIntegrationCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeListenerCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakePolicyCommand;
+use SamuelNunes\LaravelDddToolkit\Commands\MakePortCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeRepositoryCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeUsecaseCommand;
 use SamuelNunes\LaravelDddToolkit\Commands\MakeValueObjectCommand;
@@ -40,14 +45,19 @@ class LaravelDddToolkitServiceProvider extends ServiceProvider
         ], 'ddd-stubs');
 
         $this->commands([
+            DddCacheCommand::class,
+            DddCheckCommand::class,
+            DddClearCommand::class,
             DddInstallCommand::class,
-            MakeAclCommand::class,
+            MakeAdapterCommand::class,
             MakeAggregateCommand::class,
             MakeModuleCommand::class,
             MakeEntityCommand::class,
             MakeEventCommand::class,
+            MakeIntegrationCommand::class,
             MakeListenerCommand::class,
             MakePolicyCommand::class,
+            MakePortCommand::class,
             MakeRepositoryCommand::class,
             MakeUsecaseCommand::class,
             MakeValueObjectCommand::class,

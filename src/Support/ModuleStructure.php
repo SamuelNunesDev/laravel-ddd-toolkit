@@ -7,40 +7,37 @@ class ModuleStructure
     /**
      * @return array<int, string>
      */
-    public function directories(): array
+    public function directories(?string $preset = null): array
     {
-        if (! (bool) config('ddd.default_domain_structure', true)) {
-            return [
-                'Domain',
-                'Application',
-                'Infrastructure',
-            ];
-        }
-
-        $preset = (string) config('ddd.preset', 'default');
+        $preset = $preset ?: (string) config('ddd.default_preset', config('ddd.preset', 'hexagonal'));
         $directories = config("ddd.presets.{$preset}.directories");
 
         if (is_array($directories) && $directories !== []) {
             return array_values(array_map('strval', $directories));
         }
 
+        return $this->fallbackHexagonalDirectories();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function fallbackHexagonalDirectories(): array
+    {
         return [
             'Domain/Entities',
             'Domain/ValueObjects',
             'Domain/Events',
             'Domain/Exceptions',
-            'Domain/Contracts',
-            'Application/Commands',
-            'Application/Queries',
+            'Application/UseCases',
             'Application/DTO',
-            'Application/Handlers',
+            'Application/Ports/In',
+            'Application/Ports/Out',
             'Infrastructure/Http/Controllers',
             'Infrastructure/Http/Requests',
             'Infrastructure/Persistence/Models',
-            'Infrastructure/Persistence/Repositories',
+            'Infrastructure/Persistence/Adapters',
             'Infrastructure/Integrations',
-            'Infrastructure/Jobs',
-            'Infrastructure/Listeners',
             'Infrastructure/Providers',
         ];
     }

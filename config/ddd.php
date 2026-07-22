@@ -1,11 +1,11 @@
 <?php
 
 return [
+    'default_preset' => 'hexagonal',
+
     'modules_path' => 'app/Modules',
 
     'shared_path' => 'app/Shared',
-
-    'default_domain_structure' => true,
 
     'create_repositories' => false,
 
@@ -15,9 +15,26 @@ return [
 
     'create_events' => true,
 
-    'preset' => 'default',
-
     'presets' => [
+        'hexagonal' => [
+            'directories' => [
+                'Domain/Entities',
+                'Domain/ValueObjects',
+                'Domain/Events',
+                'Domain/Exceptions',
+                'Application/UseCases',
+                'Application/DTO',
+                'Application/Ports/In',
+                'Application/Ports/Out',
+                'Infrastructure/Http/Controllers',
+                'Infrastructure/Http/Requests',
+                'Infrastructure/Persistence/Models',
+                'Infrastructure/Persistence/Adapters',
+                'Infrastructure/Integrations',
+                'Infrastructure/Providers',
+            ],
+        ],
+
         'minimal' => [
             'directories' => [
                 'Domain',
@@ -26,25 +43,16 @@ return [
             ],
         ],
 
-        'default' => [
+        'tactical' => [
             'directories' => [
                 'Domain/Entities',
                 'Domain/ValueObjects',
                 'Domain/Events',
                 'Domain/Exceptions',
-                'Domain/Contracts',
-                'Application/Commands',
-                'Application/Queries',
                 'Application/DTO',
-                'Application/Handlers',
-                'Infrastructure/Http/Controllers',
-                'Infrastructure/Http/Requests',
-                'Infrastructure/Persistence/Models',
-                'Infrastructure/Persistence/Repositories',
-                'Infrastructure/Integrations',
-                'Infrastructure/Jobs',
-                'Infrastructure/Listeners',
-                'Infrastructure/Providers',
+                'Application/UseCases',
+                'Infrastructure/Http',
+                'Infrastructure/Persistence',
             ],
         ],
 
@@ -55,14 +63,14 @@ return [
                 'Domain/ValueObjects',
                 'Domain/Events',
                 'Domain/Exceptions',
-                'Domain/Contracts',
-                'Application/Commands',
-                'Application/Queries',
                 'Application/DTO',
-                'Application/Handlers',
+                'Application/UseCases',
+                'Application/Ports/In',
+                'Application/Ports/Out',
                 'Infrastructure/Http/Controllers',
                 'Infrastructure/Http/Requests',
                 'Infrastructure/Persistence/Models',
+                'Infrastructure/Persistence/Adapters',
                 'Infrastructure/Persistence/Repositories',
                 'Infrastructure/Integrations',
                 'Infrastructure/Jobs',

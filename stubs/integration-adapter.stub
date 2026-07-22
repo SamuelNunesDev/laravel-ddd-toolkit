@@ -1,0 +1,10 @@
+<?php
+
+namespace {{ namespace }};
+
+class {{ integration }}Adapter
+{
+    public function __construct(private readonly {{ integration }}Client $client)
+    {
+    }
+}

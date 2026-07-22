@@ -11,14 +11,14 @@ use SamuelNunes\LaravelDddToolkit\Commands\Concerns\WritesFiles;
 use SamuelNunes\LaravelDddToolkit\Support\ModulePaths;
 use SamuelNunes\LaravelDddToolkit\Support\StubRenderer;
 
-class MakeAclCommand extends Command
+class MakeIntegrationCommand extends Command
 {
     use ResolvesModules;
     use WritesFiles;
 
-    protected $signature = 'make:acl {name : The integration name} {--module= : The target module} {--force : Overwrite existing files}';
+    protected $signature = 'make:integration {module : The target module} {name : The integration name} {--force : Overwrite existing files}';
 
-    protected $description = 'Create an anti-corruption layer for an external integration.';
+    protected $description = 'Create an external integration inside a module infrastructure layer.';
 
     protected Filesystem $files;
 
@@ -27,19 +27,13 @@ class MakeAclCommand extends Command
     public function handle(Filesystem $files): int
     {
         $this->files = $files;
-        $this->modulePaths = new ModulePaths($this->laravel);
         $stubs = new StubRenderer($this->laravel, $files);
         $force = (bool) $this->option('force');
         try {
-            $module = $this->resolveModuleName();
+            $this->modulePaths = new ModulePaths($this->laravel);
+            $module = $this->modulePaths->moduleName((string) $this->argument('module'));
         } catch (InvalidArgumentException $exception) {
             $this->components->error($exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        if ($module === null) {
-            $this->components->error('Unable to infer the module. Pass the module explicitly with [--module=ModuleName].');
 
             return self::FAILURE;
         }
@@ -52,21 +46,21 @@ class MakeAclCommand extends Command
         $namespace = $this->modulePaths->moduleNamespace($module) . '\\Infrastructure\\Integrations\\' . $integration;
         $directory = $this->modulePaths->modulePath($module) . DIRECTORY_SEPARATOR . 'Infrastructure/Integrations/' . $integration;
 
+        $this->ensureDirectoryExists($directory . DIRECTORY_SEPARATOR . 'DTO');
+        $this->ensureDirectoryExists($directory . DIRECTORY_SEPARATOR . 'Exceptions');
+
         $filesToWrite = [
-            'Client.php' => 'acl-client.stub',
-            'Adapter.php' => 'acl-adapter.stub',
-            'Mapper.php' => 'acl-mapper.stub',
-            'DTO.php' => 'acl-dto.stub',
+            "{$integration}Client.php" => 'integration-client.stub',
+            "{$integration}Adapter.php" => 'integration-adapter.stub',
+            "{$integration}Mapper.php" => 'integration-mapper.stub',
         ];
 
         $created = false;
         foreach ($filesToWrite as $filename => $stub) {
-            $class = pathinfo($filename, PATHINFO_FILENAME);
             $created = $this->writeFile(
                 $directory . DIRECTORY_SEPARATOR . $filename,
                 $stubs->render($stub, [
                     'namespace' => $namespace,
-                    'class' => $class,
                     'integration' => $integration,
                     'module' => $module,
                 ]),

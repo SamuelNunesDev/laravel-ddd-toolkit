@@ -40,6 +40,12 @@ class {{ class }} extends ServiceProvider
             return $this->modules;
         }
 
+        $manifest = $this->manifest();
+
+        if ($manifest !== null) {
+            return $this->modules = $manifest['modules'];
+        }
+
         $modulesPath = $this->modulesPath();
 
         if (! is_dir($modulesPath)) {
@@ -57,6 +63,12 @@ class {{ class }} extends ServiceProvider
      */
     private function routeFiles(): array
     {
+        $manifest = $this->manifest();
+
+        if ($manifest !== null) {
+            return $manifest['routes'];
+        }
+
         $routes = [];
 
         foreach ($this->modules() as $modulePath) {
@@ -75,6 +87,12 @@ class {{ class }} extends ServiceProvider
      */
     private function providerFiles(): array
     {
+        $manifest = $this->manifest();
+
+        if ($manifest !== null) {
+            return $manifest['providers'];
+        }
+
         $providers = [];
 
         foreach ($this->modules() as $modulePath) {
@@ -84,6 +102,30 @@ class {{ class }} extends ServiceProvider
         }
 
         return $providers;
+    }
+
+    /**
+     * @return array{modules: array<int, string>, providers: array<int, string>, routes: array<int, string>}|null
+     */
+    private function manifest(): ?array
+    {
+        $path = base_path('bootstrap/cache/ddd-modules.php');
+
+        if (! is_file($path)) {
+            return null;
+        }
+
+        $manifest = require $path;
+
+        if (! is_array($manifest)) {
+            return null;
+        }
+
+        return [
+            'modules' => array_values(array_map('strval', $manifest['modules'] ?? [])),
+            'providers' => array_values(array_map('strval', $manifest['providers'] ?? [])),
+            'routes' => array_values(array_map('strval', $manifest['routes'] ?? [])),
+        ];
     }
 
     private function modulesPath(): string

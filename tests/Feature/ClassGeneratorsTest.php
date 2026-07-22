@@ -12,7 +12,7 @@ class ClassGeneratorsTest extends TestCase
         $this->artisan('make:module', ['name' => 'Order'])->assertSuccessful();
         $this->artisan('make:entity', ['name' => 'Order', '--module' => 'Order'])->assertSuccessful();
         $this->artisan('make:value-object', ['name' => 'Email', '--module' => 'Order'])->assertSuccessful();
-        $this->artisan('make:usecase', ['name' => 'CancelOrder', '--module' => 'Order'])->assertSuccessful();
+        $this->artisan('make:usecase', ['module' => 'Order', 'name' => 'CancelOrder'])->assertSuccessful();
 
         $files = new Filesystem();
 
@@ -25,9 +25,11 @@ class ClassGeneratorsTest extends TestCase
             $files->get(base_path('app/Modules/Order/Domain/ValueObjects/Email.php')),
         );
         $this->assertStringContainsString(
-            'namespace App\\Modules\\Order\\Application\\Handlers;',
-            $files->get(base_path('app/Modules/Order/Application/Handlers/CancelOrder.php')),
+            'namespace App\\Modules\\Order\\Application\\UseCases\\CancelOrder;',
+            $files->get(base_path('app/Modules/Order/Application/UseCases/CancelOrder/CancelOrderHandler.php')),
         );
+        $this->assertTrue($files->exists(base_path('app/Modules/Order/Application/UseCases/CancelOrder/CancelOrderCommand.php')));
+        $this->assertTrue($files->exists(base_path('app/Modules/Order/Application/UseCases/CancelOrder/CancelOrderResult.php')));
     }
 
     public function test_it_does_not_overwrite_without_force(): void
@@ -60,7 +62,7 @@ class ClassGeneratorsTest extends TestCase
         ]);
 
         $this->artisan('make:module', ['name' => 'Payment'])->assertSuccessful();
-        $this->artisan('make:acl', ['name' => 'Stripe', '--module' => 'Payment'])->assertSuccessful();
+        $this->artisan('make:integration', ['module' => 'Payment', 'name' => 'Stripe'])->assertSuccessful();
         $this->artisan('make:event', ['name' => 'OrderCancelled', '--module' => 'Payment'])->assertSuccessful();
         $this->artisan('make:listener', ['name' => 'RefundPayment', '--module' => 'Payment'])->assertSuccessful();
         $this->artisan('make:policy', ['name' => 'PaymentPolicy', '--module' => 'Payment'])->assertSuccessful();
@@ -69,10 +71,11 @@ class ClassGeneratorsTest extends TestCase
 
         $files = new Filesystem();
 
-        $this->assertTrue($files->exists(base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe/Client.php')));
-        $this->assertTrue($files->exists(base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe/Adapter.php')));
-        $this->assertTrue($files->exists(base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe/Mapper.php')));
-        $this->assertTrue($files->exists(base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe/DTO.php')));
+        $this->assertTrue($files->exists(base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe/StripeClient.php')));
+        $this->assertTrue($files->exists(base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe/StripeAdapter.php')));
+        $this->assertTrue($files->exists(base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe/StripeMapper.php')));
+        $this->assertTrue($files->isDirectory(base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe/DTO')));
+        $this->assertTrue($files->isDirectory(base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe/Exceptions')));
         $this->assertTrue($files->exists(base_path('app/Modules/Payment/Domain/Events/OrderCancelled.php')));
         $this->assertTrue($files->exists(base_path('app/Modules/Payment/Infrastructure/Listeners/RefundPayment.php')));
         $this->assertTrue($files->exists(base_path('app/Modules/Payment/Infrastructure/Policies/PaymentPolicy.php')));
@@ -80,25 +83,23 @@ class ClassGeneratorsTest extends TestCase
         $this->assertTrue($files->exists(base_path('app/Modules/Payment/Domain/Aggregates/PaymentAggregate.php')));
     }
 
-    public function test_acl_generation_completes_missing_files_without_overwriting_existing_files(): void
+    public function test_integration_generation_completes_missing_files_without_overwriting_existing_files(): void
     {
         $this->artisan('make:module', ['name' => 'Payment'])->assertSuccessful();
-        $this->artisan('make:acl', ['name' => 'Stripe', '--module' => 'Payment'])->assertSuccessful();
+        $this->artisan('make:integration', ['module' => 'Payment', 'name' => 'Stripe'])->assertSuccessful();
 
         $files = new Filesystem();
         $directory = base_path('app/Modules/Payment/Infrastructure/Integrations/Stripe');
-        $clientPath = $directory . '/Client.php';
+        $clientPath = $directory . '/StripeClient.php';
 
         $files->put($clientPath, 'custom client');
-        $files->delete($directory . '/Adapter.php');
-        $files->delete($directory . '/Mapper.php');
-        $files->delete($directory . '/DTO.php');
+        $files->delete($directory . '/StripeAdapter.php');
+        $files->delete($directory . '/StripeMapper.php');
 
-        $this->artisan('make:acl', ['name' => 'Stripe', '--module' => 'Payment'])->assertSuccessful();
+        $this->artisan('make:integration', ['module' => 'Payment', 'name' => 'Stripe'])->assertSuccessful();
 
         $this->assertSame('custom client', $files->get($clientPath));
-        $this->assertTrue($files->exists($directory . '/Adapter.php'));
-        $this->assertTrue($files->exists($directory . '/Mapper.php'));
-        $this->assertTrue($files->exists($directory . '/DTO.php'));
+        $this->assertTrue($files->exists($directory . '/StripeAdapter.php'));
+        $this->assertTrue($files->exists($directory . '/StripeMapper.php'));
     }
 }

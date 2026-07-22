@@ -14,7 +14,7 @@ class MakeModuleCommand extends Command
 {
     use WritesFiles;
 
-    protected $signature = 'make:module {name : The module name} {--force : Overwrite generated files}';
+    protected $signature = 'make:module {name : The module name} {--preset= : Structure preset: hexagonal, minimal, tactical, or full} {--force : Overwrite generated files}';
 
     protected $description = 'Create a DDD module structure.';
 
@@ -27,6 +27,7 @@ class MakeModuleCommand extends Command
         $structure = new ModuleStructure();
         $stubs = new StubRenderer($this->laravel, $files);
         try {
+            $preset = $this->preset();
             $module = $modulePaths->moduleName((string) $this->argument('name'));
         } catch (InvalidArgumentException $exception) {
             $this->components->error($exception->getMessage());
@@ -38,13 +39,13 @@ class MakeModuleCommand extends Command
 
         $this->ensureDirectoryExists($modulePath);
 
-        foreach ($structure->directories() as $directory) {
+        foreach ($structure->directories($preset) as $directory) {
             $this->ensureDirectoryExists($modulePath . DIRECTORY_SEPARATOR . $directory);
         }
 
         $routesPath = $modulePath . DIRECTORY_SEPARATOR . 'Infrastructure/Http/routes.php';
 
-        if (str_contains(implode('|', $structure->directories()), 'Infrastructure/Http')) {
+        if (str_contains(implode('|', $structure->directories($preset)), 'Infrastructure/Http')) {
             $this->writeFile(
                 $routesPath,
                 $stubs->render('module-routes.stub', ['module' => $module]),
@@ -55,5 +56,20 @@ class MakeModuleCommand extends Command
         $this->components->info("Module [{$module}] is ready.");
 
         return self::SUCCESS;
+    }
+
+    private function preset(): string
+    {
+        $preset = (string) ($this->option('preset') ?: config('ddd.default_preset', 'hexagonal'));
+        $presets = array_unique(array_merge(
+            array_keys((require __DIR__ . '/../../config/ddd.php')['presets'] ?? []),
+            array_keys(is_array(config('ddd.presets')) ? config('ddd.presets') : []),
+        ));
+
+        if (! in_array($preset, $presets, true)) {
+            throw new InvalidArgumentException("Invalid module preset [{$preset}].");
+        }
+
+        return $preset;
     }
 }
