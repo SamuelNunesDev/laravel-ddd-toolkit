@@ -115,6 +115,7 @@ app/Modules
 app/Shared
 app/Providers/ModulesServiceProvider.php
 config/ddd.php
+AGENTS.md
 ```
 
 On Laravel 11 and newer, it also registers `App\Providers\ModulesServiceProvider` in:
@@ -124,6 +125,46 @@ bootstrap/providers.php
 ```
 
 If legacy folders such as `app/Models`, `app/Services`, or `app/Repositories` exist, the command may ask if you want to review them. It never removes those folders automatically.
+
+The installer never overwrites an existing `AGENTS.md` unless `--force-agents` is explicitly used.
+
+Installer options:
+
+```text
+--no-agents
+--merge-agents
+--force-agents
+```
+
+## AI-friendly projects
+
+Laravel DDD Toolkit can publish an `AGENTS.md` file to help AI coding agents understand the architecture of your Laravel project.
+
+```bash
+php artisan ddd:install
+```
+
+If your project already has an `AGENTS.md`, it will not be overwritten.
+
+To merge Laravel DDD Toolkit instructions into an existing file:
+
+```bash
+php artisan ddd:install --merge-agents
+```
+
+To skip publishing:
+
+```bash
+php artisan ddd:install --no-agents
+```
+
+To overwrite:
+
+```bash
+php artisan ddd:install --force-agents
+```
+
+The file guides agents to preserve vertical modules, hexagonal architecture by default, ports in `Application`, adapters in `Infrastructure`, a Domain layer without Laravel dependencies, `make:module` instead of `make:domain`, and `ddd:check` before finishing architectural changes.
 
 ## Quick Start
 

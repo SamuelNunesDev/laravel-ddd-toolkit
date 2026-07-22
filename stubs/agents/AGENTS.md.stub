@@ -1,0 +1,137 @@
+# AGENTS.md - Laravel DDD Toolkit
+
+## Project architecture
+
+This project uses Laravel DDD Toolkit.
+
+The architecture is based on:
+
+- vertical modules;
+- hexagonal architecture by default;
+- pragmatic tactical DDD;
+- Laravel-native workflows.
+
+## Module structure
+
+Business capabilities live under:
+
+```text
+app/Modules/{Module}/
+|-- Domain/
+|-- Application/
+|   `-- Ports/
+|       |-- In/
+|       `-- Out/
+`-- Infrastructure/
+```
+
+Use `app/Modules`, not `app/Domains`.
+
+Use `make:module`, not `make:domain`.
+
+## Layer rules
+
+### Domain
+
+Domain contains:
+
+- entities;
+- value objects;
+- domain events;
+- domain exceptions;
+- business rules.
+
+Domain must not depend on:
+
+- Laravel;
+- Eloquent;
+- HTTP;
+- Jobs;
+- Infrastructure;
+- external SDKs.
+
+### Application
+
+Application contains:
+
+- use cases;
+- DTOs;
+- inbound ports;
+- outbound ports.
+
+Application may depend on Domain.
+
+Application must not depend on:
+
+- Controllers;
+- Requests;
+- Eloquent models;
+- Infrastructure adapters.
+
+### Infrastructure
+
+Infrastructure contains:
+
+- Controllers;
+- Requests;
+- Eloquent models;
+- persistence adapters;
+- integrations;
+- jobs;
+- listeners;
+- providers;
+- Laravel-specific code.
+
+Infrastructure may depend on Application and Domain.
+
+## Ports and adapters
+
+Ports live in:
+
+```text
+Application/Ports/In
+Application/Ports/Out
+```
+
+Adapters live in:
+
+```text
+Infrastructure/Persistence/Adapters
+Infrastructure/Integrations
+```
+
+Repositories in this architecture are usually outbound ports, not Domain contracts.
+
+Do not create `Domain/Contracts` for the default hexagonal structure.
+
+## Commands
+
+Prefer these commands:
+
+```bash
+php artisan make:module Order
+php artisan make:port Order OrderRepository --type=out
+php artisan make:adapter Order EloquentOrderRepository --port=OrderRepository --type=persistence
+php artisan make:integration Payment Stripe
+php artisan ddd:check
+```
+
+Do not reintroduce `make:domain`.
+
+## Pragmatism
+
+Do not force CQRS, Event Sourcing or repositories everywhere.
+
+Eloquent is allowed in Infrastructure.
+
+Repositories are optional and should only be generated when they add value.
+
+Laravel conventions should be preserved whenever possible.
+
+## Architectural checks
+
+Before finishing changes that affect modules, layers, namespaces or generated code, run:
+
+```bash
+php artisan ddd:check
+```

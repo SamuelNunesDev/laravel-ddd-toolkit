@@ -15,6 +15,12 @@ return [
 
     'create_events' => true,
 
+    'agents' => [
+        'enabled' => true,
+        'filename' => 'AGENTS.md',
+        'publish_on_install' => true,
+    ],
+
     'presets' => [
         'hexagonal' => [
             'directories' => [

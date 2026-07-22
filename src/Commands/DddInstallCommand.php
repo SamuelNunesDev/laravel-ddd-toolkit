@@ -4,6 +4,8 @@ namespace SamuelNunes\LaravelDddToolkit\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use SamuelNunes\LaravelDddToolkit\Support\AgentsFilePublisher;
+use SamuelNunes\LaravelDddToolkit\Support\AgentsPublishResult;
 use SamuelNunes\LaravelDddToolkit\Commands\Concerns\WritesFiles;
 use SamuelNunes\LaravelDddToolkit\Support\ModulePaths;
 use SamuelNunes\LaravelDddToolkit\Support\StubRenderer;
@@ -12,7 +14,11 @@ class DddInstallCommand extends Command
 {
     use WritesFiles;
 
-    protected $signature = 'ddd:install {--force : Overwrite generated files}';
+    protected $signature = 'ddd:install
+        {--force : Overwrite generated files}
+        {--no-agents : Skip AGENTS.md publishing}
+        {--merge-agents : Append or update Laravel DDD Toolkit instructions in AGENTS.md}
+        {--force-agents : Overwrite AGENTS.md with Laravel DDD Toolkit instructions}';
 
     protected $description = 'Install the Laravel DDD Toolkit structure in the application.';
 
@@ -32,6 +38,7 @@ class DddInstallCommand extends Command
         $this->publishConfig($force);
         $this->createModulesServiceProvider($modulePaths, $stubs, $force);
         $this->registerModulesServiceProvider($modulePaths);
+        $this->publishAgentsFile(new AgentsFilePublisher($files, $stubs));
         $this->reportLegacyFolders();
 
         $this->components->info('Laravel DDD Toolkit installed.');
@@ -100,6 +107,38 @@ class DddInstallCommand extends Command
 
         $this->files->put($providersPath, $updated);
         $this->components->info('ModulesServiceProvider registered in bootstrap/providers.php.');
+    }
+
+    private function publishAgentsFile(AgentsFilePublisher $publisher): void
+    {
+        $result = $publisher->publish(
+            $this->laravel->basePath(),
+            merge: (bool) $this->option('merge-agents'),
+            force: (bool) $this->option('force-agents'),
+            skip: (bool) $this->option('no-agents'),
+            enabled: (bool) config('ddd.agents.enabled', true),
+            publishOnInstall: (bool) config('ddd.agents.publish_on_install', true),
+            filename: (string) config('ddd.agents.filename', 'AGENTS.md'),
+        );
+
+        $this->reportAgentsPublishResult($result);
+    }
+
+    private function reportAgentsPublishResult(AgentsPublishResult $result): void
+    {
+        if ($result->status === 'exists') {
+            $this->components->warn($result->message);
+
+            return;
+        }
+
+        if ($result->status === 'skipped') {
+            $this->line('- ' . $result->message);
+
+            return;
+        }
+
+        $this->components->info($result->message);
     }
 
     private function reportLegacyFolders(): void

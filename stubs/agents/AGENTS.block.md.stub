@@ -1,0 +1,27 @@
+<!-- BEGIN LARAVEL-DDD-TOOLKIT -->
+
+## Laravel DDD Toolkit
+
+This project uses Laravel DDD Toolkit.
+
+Architecture defaults:
+
+- vertical modules under `app/Modules`;
+- hexagonal architecture by default;
+- pragmatic tactical DDD;
+- `make:module`, not `make:domain`;
+- ports live in `Application/Ports/In` and `Application/Ports/Out`;
+- adapters live in `Infrastructure`;
+- Domain must not depend on Laravel, Eloquent, HTTP, Jobs, Infrastructure or external SDKs;
+- Application must not depend on Controllers, Requests, Eloquent models or Infrastructure adapters;
+- Infrastructure may depend on Application and Domain;
+- Eloquent is allowed in Infrastructure;
+- repositories are optional and should only be generated when they add value.
+
+Recommended command before finishing architectural changes:
+
+```bash
+php artisan ddd:check
+```
+
+<!-- END LARAVEL-DDD-TOOLKIT -->

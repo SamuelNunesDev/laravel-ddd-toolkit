@@ -43,6 +43,7 @@ abstract class TestCase extends Orchestra
         $files->deleteDirectory($basePath . '/app');
         $files->deleteDirectory($basePath . '/config');
         $files->deleteDirectory($basePath . '/stubs');
+        $files->delete($basePath . '/AGENTS.md');
         $files->delete($basePath . '/bootstrap/cache/ddd-modules.php');
         $files->ensureDirectoryExists($basePath . '/bootstrap');
         $files->ensureDirectoryExists($basePath . '/bootstrap/cache');
