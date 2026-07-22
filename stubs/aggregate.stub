@@ -1,0 +1,27 @@
+<?php
+
+namespace {{ namespace }};
+
+abstract class {{ class }}
+{
+    /**
+     * @var array<int, object>
+     */
+    private array $recordedEvents = [];
+
+    protected function recordThat(object $event): void
+    {
+        $this->recordedEvents[] = $event;
+    }
+
+    /**
+     * @return array<int, object>
+     */
+    public function releaseEvents(): array
+    {
+        $events = $this->recordedEvents;
+        $this->recordedEvents = [];
+
+        return $events;
+    }
+}

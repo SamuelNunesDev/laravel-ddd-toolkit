@@ -1,0 +1,20 @@
+<?php
+
+namespace {{ namespace }};
+
+final readonly class {{ class }}
+{
+    public function __construct(private mixed $value)
+    {
+    }
+
+    public function value(): mixed
+    {
+        return $this->value;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->value;
+    }
+}
